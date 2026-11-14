@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проверка сертификата — Институт финансов и экономики</title>
+<style>
+  :root { --green:#0d7a3f; --red:#b3261e; --amber:#b26a00; --ink:#1a1a2e; --muted:#6b7280; --bg:#f5f6fa; --card:#ffffff; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+  header { width:100%; background:var(--card); border-bottom:1px solid #e5e7eb; padding:18px 24px; text-align:center; }
+  header h1 { font-size:1.15rem; }
+  header p { color:var(--muted); font-size:.85rem; margin-top:4px; }
+  main { width:100%; max-width:560px; padding:32px 20px; flex:1; }
+  .card { background:var(--card); border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:28px; }
+  label { display:block; font-weight:600; margin-bottom:8px; }
+  .hint { font-size:.85rem; color:var(--muted); margin-bottom:16px; }
+  .row { display:flex; gap:8px; }
+  input[type=text] { flex:1; padding:12px 14px; border:1px solid #d1d5db; border-radius:8px; font-size:1rem; }
+  input[type=text]:focus { outline:2px solid #2563eb33; border-color:#2563eb; }
+  button { padding:12px 20px; border:none; border-radius:8px; background:#1a1a2e; color:#fff; font-size:1rem; cursor:pointer; }
+  button:hover { background:#2b2b4d; }
+  .result { margin-top:22px; border-radius:10px; padding:18px; display:none; }
+  .ok    { display:block; background:#e7f6ed; border:1px solid var(--green); }
+  .warn  { display:block; background:#fdf3e0; border:1px solid var(--amber); }
+  .fail  { display:block; background:#fdecea; border:1px solid var(--red); }
+  .verdict { font-weight:700; font-size:1.05rem; margin-bottom:10px; }
+  .ok .verdict   { color:var(--green); }
+  .warn .verdict { color:var(--amber); }
+  .fail .verdict { color:var(--red); }
+  .fields div { margin:4px 0; font-size:.95rem; }
+  .fields b { color:var(--muted); font-weight:600; }
+  .spinner { display:none; margin-top:18px; color:var(--muted); }
+  footer { padding:20px; color:var(--muted); font-size:.8rem; text-align:center; }
+  a { color:#2563eb; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Институт финансов и экономики</h1>
+  <p>Официальная система проверки квалификационных документов</p>
+</header>
+
+<main>
+  <div class="card">
+    <label for="doc-id">Введите идентификатор документа</label>
+    <p class="hint">Формат идентификатора: CA-2026-000000 (указан на бланке сертификата)</p>
+    <div class="row">
+      <input type="text" id="doc-id" placeholder="CA-2026-000001" autocomplete="off">
+      <button id="check-btn" onclick="doCheck()">Проверить</button>
+    </div>
+    <div class="spinner" id="spinner">Выполняется проверка…</div>
+    <div id="result" class="result"></div>
+  </div>
+</main>
+
+<footer>
+  Институт финансов и экономики · <a href="https://iiefinstitute.org">iiefinstitute.org</a><br>
+  Проверка выполняется по официальному реестру института.
+</footer>
+
+<script>
+var RESULTS = {
+  valid:   { cls:'ok',   verdict:'Сертификат действителен' },
+  revoked: { cls:'fail', verdict:'Документ отозван' },
+  missing: { cls:'fail', verdict:'Документ не найден в реестре' }
+};
+
+function showResult(cls, verdict, fields) {
+  var r = document.getElementById('result');
+  r.className = 'result ' + cls;
+  var html = '<div class="verdict">' + verdict + '</div>';
+  if (fields) {
+    html += '<div class="fields">';
+    if (fields.holder)      html += '<div><b>Владелец:</b> ' + esc(fields.holder) + '</div>';
+    if (fields.qualification) html += '<div><b>Квалификация:</b> ' + esc(fields.qualification) + '</div>';
+    if (fields.issue_date)  html += '<div><b>Дата выдачи:</b> ' + esc(fields.issue_date) + '</div>';
+    if (fields.status)      html += '<div><b>Статус:</b> ' + esc(fields.status) + '</div>';
+    html += '</div>';
+  }
+  r.innerHTML = html;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function normalizeId(v) {
+  return v.trim().toUpperCase().replace(/\s+/g, '');
+}
+
+function doCheck() {
+  var id = normalizeId(document.getElementById('doc-id').value);
+  document.getElementById('result').className = 'result';
+  if (!id) { showResult('fail', 'Введите идентификатор документа'); return; }
+  document.getElementById('spinner').style.display = 'block';
+  fetch('registry.csv')
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('registry_not_loaded');
+      return resp.text();
+    })
+    .then(function(text) {
+      document.getElementById('spinner').style.display = 'none';
+      var lines = text.split(/\r?\n/).filter(function(l){ return l.trim().length > 0; });
+      if (lines.length === 0) throw new Error('registry_empty');
+      var header = parseCsvLine(lines[0]);
+      var idCol = header.indexOf('document_id');
+      if (idCol === -1) throw new Error('registry_format');
+      var row = null;
+      for (var i = 1; i < lines.length; i++) {
+        var cells = parseCsvLine(lines[i]);
+        if (normalizeId(cells[idCol] || '') === id) { row = cells; break; }
+      }
+      if (!row) {
+        showResult('missing', RESULTS.missing.verdict, null);
+        return;
+      }
+      var rec = {};
+      for (var j = 0; j < header.length; j++) rec[header[j]] = (row[j] || '').trim();
+      if (rec.status.toLowerCase() === 'действует') {
+        showResult('valid', RESULTS.valid.verdict, rec);
+      } else if (rec.status.toLowerCase() === 'отозван') {
+        showResult('warn', 'Внимание: документ отозван институтом', rec);
+      } else {
+        showResult('missing', 'Неизвестный статус записи: ' + rec.status, rec);
+      }
+    })
+    .catch(function(e) {
+      document.getElementById('spinner').style.display = 'none';
+      showResult('fail', 'Реестр недоступен. Повторите проверку позже или обратитесь в институт.');
+    });
+}
+
+function parseCsvLine(line) {
+  var out = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (inQ) {
+      if (ch === '"') {
+        if (line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = false;
+      } else cur += ch;
+    } else {
+      if (ch === '"') inQ = true;
+      else if (ch === ',') { out.push(cur); cur = ''; }
+      else cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+// Автопроверка, если ID передан в адресной строке: ?id=CA-2026-000001
+window.addEventListener('DOMContentLoaded', function() {
+  var m = new URLSearchParams(window.location.search).get('id');
+  if (m) {
+    document.getElementById('doc-id').value = m;
+    doCheck();
+  }
+});
+</script>
+</body>
+</html>
