@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Проверка квалификационных документов — IIEF</title>
+<title>Проверка квалификационных документов — ЦПК «Финансы и экономика»</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -90,6 +90,16 @@
     white-space: nowrap;
   }
   button:hover { background: #10243e; }
+  .test-banner {
+    margin-top: 18px;
+    background: #fdf3e0;
+    border: 1px solid #ecd9b0;
+    color: #7a4a00;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
   .result {
     margin-top: 24px;
     padding: 18px 20px;
@@ -116,21 +126,12 @@
   .result.error    { background: #fdecec; border: 1px solid #f0bcbc; }
   .result.error .badge   { background: #b23b3b; color: #fff; }
   .result .doc-id { font-weight: bold; color: #10243e; }
-  .test-banner {
-    background: #fdf3e0;
-    border: 1px solid #b26a00;
-    color: #7a4a00;
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-  .disclaimer {
+  .result .disclaimer {
     margin-top: 12px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    font-size: 13px;
-    color: #5a6b7d;
+    padding-top: 10px;
+    border-top: 1px solid rgba(16, 36, 62, 0.12);
+    font-size: 12px;
+    color: #6b7280;
   }
   footer {
     background: #10243e;
@@ -141,17 +142,17 @@
     font-size: 13px;
   }
   footer a { color: #c9a227; text-decoration: none; }
-  footer .footer-note { margin-top: 6px; opacity: 0.8; }
+  footer .small { font-size: 11px; margin-top: 8px; opacity: 0.8; }
   @media (max-width: 520px) {
     .row { flex-direction: column; }
     button { width: 100%; }
-    header h1 { font-size: 22px; }
+    header h1 { font-size: 20px; }
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>Институт финансов и экономики</h1>
+  <h1>Центр профессиональных квалификаций «Финансы и экономика»</h1>
   <p>Единая система проверки квалификационных документов</p>
 </header>
 <main>
@@ -162,35 +163,37 @@
       <input type="text" id="docId" placeholder="CA-2026-000001" autocomplete="off">
       <button id="checkBtn">Проверить</button>
     </div>
+    <div id="testBanner"></div>
     <div id="result" class="result"></div>
   </div>
 </main>
 <footer>
-  Институт финансов и экономики (IIEF) — verify.iiefinstitute.org ·
+  Центр профессиональных квалификаций «Финансы и экономика» (ЦПК ФЭ) —
+  <a href="https://verify.iiefinstitute.org">verify.iiefinstitute.org</a> ·
   <a href="https://iiefinstitute.org">iiefinstitute.org</a>
-  <div class="footer-note">Сертификат участника не является документом об образовании.</div>
+  <div class="small">Сертификат участника не является документом об образовании.</div>
 </footer>
 <script>
 (function () {
   var input = document.getElementById('docId');
   var button = document.getElementById('checkBtn');
   var result = document.getElementById('result');
+  var testBanner = document.getElementById('testBanner');
+
+  var DISCLAIMER = '<div class="disclaimer">Сертификат участника не является документом об образовании.</div>';
 
   function normalize(s) {
     return String(s || '').replace(/\s+/g, '').replace(/[\u2010\u2011\u2012\u2013]/g, '-').toUpperCase();
   }
 
-  function showResult(cls, badge, html) {
+  function showResult(cls, badge, html, isTest) {
     result.className = 'result ' + cls;
-    var disclaimer = '';
-    if (cls === 'valid' || cls === 'revoked') {
-      disclaimer = '<div class="disclaimer">Сертификат участника не является документом об образовании</div>';
-    }
-    result.innerHTML = '<span class="badge">' + badge + '</span><br>' + html + disclaimer;
+    result.innerHTML = '<span class="badge">' + badge + '</span><br>' + html + DISCLAIMER;
     result.style.display = 'block';
+    testBanner.innerHTML = isTest ? '<div class="test-banner">ТЕСТОВАЯ ЗАПИСЬ — не является действительным документом</div>' : '';
   }
 
-  // Простой разбор CSV с поддержкой кавычек
+  // Разбор CSV-строки с поддержкой кавычек
   function parseCsvLine(line) {
     var out = [], cur = '', inQ = false;
     for (var i = 0; i < line.length; i++) {
@@ -210,10 +213,11 @@
 
   function check(id) {
     if (!id) {
-      showResult('error', 'Ошибка', 'Введите регистрационный номер документа.');
+      showResult('error', 'Ошибка', 'Введите регистрационный номер документа.', false);
       return;
     }
     result.style.display = 'none';
+    testBanner.innerHTML = '';
     fetch('registry.csv?t=' + Date.now())
       .then(function (r) {
         if (!r.ok) throw new Error('registry.csv недоступен (' + r.status + ')');
@@ -221,47 +225,52 @@
       })
       .then(function (text) {
         var lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(function (l) { return l.trim(); });
+        var header = parseCsvLine(lines[0]).map(function (h) { return h.trim().toLowerCase(); });
+        var col = function (name) { return header.indexOf(name); };
+        var idCol = col('document_id');
+        if (idCol === -1) throw new Error('нет колонки document_id в реестре');
+        var nameCol = col('holder_name');
+        var qualCol = col('qualification');
+        var dateCol = col('issue_date');
+        var statusCol = col('status');
+        var testCol = col('test');
+
         var found = null;
-        for (var i = 1; i < lines.length; i++) { // строка 0 — заголовок
+        for (var i = 1; i < lines.length; i++) {
           var cols = parseCsvLine(lines[i]);
-          if (cols.length && normalize(cols[0]) === id) { found = cols; break; }
+          if (cols.length && normalize(cols[idCol]) === id) { found = cols; break; }
         }
         if (!found) {
           showResult('notfound', 'Документ не найден',
-            'Регистрационный номер <span class="doc-id">' + escapeHtml(id) + '</span> отсутствует в реестре выданных документов. Если вы считаете, что это ошибка, обратитесь в службу поддержки организации.');
+            'Регистрационный номер <span class="doc-id">' + escapeHtml(id) + '</span> отсутствует в реестре выданных документов. Если вы считаете, что это ошибка, обратитесь в службу поддержки организации.', false);
           return;
         }
-        var testBanner = '';
-        if (found.length > 5 && (found[5] || '').trim().toLowerCase() === 'true') {
-          testBanner = '<div class="test-banner">ТЕСТОВАЯ ЗАПИСЬ — не является действительным документом</div>';
-        }
-        var status = (found[4] || '').trim().toLowerCase();
-        var name = escapeHtml(found[1] || '—');
-        var qual = escapeHtml(found[2] || '—');
-        var date = escapeHtml(found[3] || '—');
+        var isTest = testCol !== -1 && (found[testCol] || '').trim().toLowerCase() === 'true';
+        var status = (found[statusCol] || '').trim().toLowerCase();
+        var name = escapeHtml(found[nameCol] || '—');
+        var qual = escapeHtml(found[qualCol] || '—');
+        var date = escapeHtml(found[dateCol] || '—');
         if (status === 'действителен' || status === 'действует') {
           showResult('valid', 'Документ действителен',
-            testBanner +
             'Номер: <span class="doc-id">' + escapeHtml(id) + '</span><br>' +
             'Владелец: ' + name + '<br>' +
             'Квалификация: ' + qual + '<br>' +
-            'Дата выдачи: ' + date);
+            'Дата выдачи: ' + date, isTest);
         } else if (status === 'отозван') {
           showResult('revoked', 'Документ отозван',
-            testBanner +
             'Номер: <span class="doc-id">' + escapeHtml(id) + '</span><br>' +
             'Владелец: ' + name + '<br>' +
             'Квалификация: ' + qual + '<br>' +
             'Дата выдачи: ' + date + '<br>' +
-            'Этот документ отозван институтом и не подтверждает квалификацию.');
+            'Этот документ отозван центром и не подтверждает квалификацию.', isTest);
         } else {
           showResult('error', 'Неизвестный статус',
-            'В реестре для номера <span class="doc-id">' + escapeHtml(id) + '</span> указан нераспознанный статус. Обратитесь в институт.');
+            'В реестре для номера <span class="doc-id">' + escapeHtml(id) + '</span> указан нераспознанный статус. Обратитесь в центр.', isTest);
         }
       })
       .catch(function (e) {
         showResult('error', 'Ошибка проверки',
-          'Не удалось загрузить реестр документов. Подробности: ' + escapeHtml(e.message) + '. Попробуйте обновить страницу или повторите позже.');
+          'Не удалось загрузить реестр документов. Подробности: ' + escapeHtml(e.message) + '. Попробуйте обновить страницу или повторите позже.', false);
       });
   }
 
