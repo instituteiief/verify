@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registry Admin — Credential Verification Service</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Georgia, "Times New Roman", serif; background:#f4f5f7; color:#1a2233; line-height:1.6; }
+  header { background:#16243d; color:#fff; padding:20px 24px; border-bottom:4px solid #c9a13b; }
+  .wrap { max-width:960px; margin:0 auto; }
+  header h1 { font-size:19px; font-weight:600; }
+  header p { font-size:13px; color:#c8d2e4; }
+  main { max-width:960px; margin:0 auto; padding:36px 24px 64px; }
+  h2 { font-size:24px; color:#16243d; margin-bottom:8px; }
+  .muted { color:#5a6474; font-size:14px; margin-bottom:24px; }
+  .panel { background:#fff; border:1px solid #d5dae3; border-radius:10px; padding:24px 28px; margin-bottom:24px; }
+  .panel h3 { font-size:17px; color:#16243d; margin-bottom:14px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+  label { display:block; font-size:12px; letter-spacing:.6px; color:#6b7486; margin-bottom:4px; }
+  input[type=text], select { width:100%; padding:10px 12px; font-size:14px; border:1px solid #c3cad6; border-radius:6px; font-family:inherit; }
+  .full { grid-column:1 / -1; }
+  .actions { margin-top:18px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  button { border:none; padding:12px 24px; border-radius:6px; font-size:15px; cursor:pointer; font-family:inherit; }
+  .primary { background:#16243d; color:#fff; } .primary:hover { background:#22355a; }
+  .gold { background:#c9a13b; color:#16243d; font-weight:bold; } .gold:hover { background:#d8b455; }
+  .checkline { font-size:14px; color:#3c4658; display:flex; align-items:center; gap:8px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th { text-align:left; font-size:11px; letter-spacing:.8px; color:#6b7486; padding:8px 10px; border-bottom:2px solid #e6e9ef; }
+  td { padding:9px 10px; border-bottom:1px solid #eef0f4; vertical-align:top; }
+  .st { font-weight:600; }
+  .st.valid { color:#1e7d43; } .st.expired { color:#8f6210; } .st.revoked { color:#b02832; }
+  .out { width:100%; min-height:200px; font-family:monospace; font-size:12px; padding:12px; border:1px solid #c3cad6; border-radius:6px; background:#fafbfd; }
+  details { margin-top:24px; }
+  summary { cursor:pointer; font-weight:600; color:#16243d; padding:12px 16px; background:#eef0f4; border-radius:8px; }
+  details ol { margin:14px 0 0 22px; }
+  details li { margin-bottom:8px; font-size:14px; color:#3c4658; }
+  .warn { background:#fdf3e0; border:1px solid #e3c680; border-radius:8px; padding:12px 16px; font-size:13px; color:#6b5312; margin-bottom:20px; }
+  footer { text-align:center; font-size:13px; color:#6b7486; padding:24px; border-top:1px solid #dfe3ea; background:#eef0f4; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Credential Registry Admin</h1>
+    <p>International Institute of Economics and Finance &mdash; internal use only</p>
+  </div>
+</header>
+<main>
+  <div class="warn"><strong>How this works:</strong> this page reads the current registry, adds your entry and produces a ready-to-upload file. Nothing is changed on the site until you upload the generated file to GitHub.</div>
+
+  <h2>Add a credential</h2>
+  <p class="muted">Fill in the fields exactly as they should appear on the verification page, then generate and upload the file.</p>
+
+  <div class="panel">
+    <h3>New record</h3>
+    <div class="grid">
+      <div><label>CREDENTIAL ID *</label><input type="text" id="f_id" placeholder="PRC-2026-003177"></div>
+      <div><label>RECIPIENT (FULL NAME) *</label><input type="text" id="f_name" placeholder="Jane A. Doe"></div>
+      <div class="full"><label>PROGRAM *</label><input type="text" id="f_program" placeholder="Professional Retraining Program in Business Management"></div>
+      <div><label>TYPE *</label><select id="f_type">
+        <option>Certificate of Completion (professional retraining)</option>
+        <option>Certificate of Completion</option>
+        <option>Diploma</option>
+      </select></div>
+      <div><label>INSTRUCTIONAL HOURS *</label><input type="text" id="f_hours" placeholder="120 hours"></div>
+      <div><label>PROGRAM PERIOD *</label><input type="text" id="f_period" placeholder="September 2025 - May 2026"></div>
+      <div><label>FINAL ASSESSMENT</label><input type="text" id="f_assessment" placeholder="Passed - score 92 of 100"></div>
+      <div><label>ISSUE DATE *</label><input type="text" id="f_issue" placeholder="May 15, 2026"></div>
+      <div><label>STATUS *</label><select id="f_status">
+        <option value="valid">valid</option>
+        <option value="expired">expired</option>
+        <option value="revoked">revoked</option>
+      </select></div>
+      <div><label>EXPIRY DATE (for expired)</label><input type="text" id="f_expiry" placeholder="April 28, 2025"></div>
+      <div><label>REVOCATION DATE (for revoked)</label><input type="text" id="f_revokeDate" placeholder="September 1, 2026"></div>
+      <div class="full"><label>REVOCATION REASON (for revoked)</label><input type="text" id="f_revokeReason" placeholder="Issued in error - administrative correction"></div>
+      <div class="full checkline"><input type="checkbox" id="f_fresh"> <span>Start a fresh registry (ignore current records &mdash; use when switching from demo data to real records)</span></div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="gen">Generate registry.js</button>
+      <button class="gold" id="dl" disabled>Download registry.js</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Generated file</h3>
+    <textarea class="out" id="out" spellcheck="false" readonly></textarea>
+    <div class="actions">
+      <span class="muted" style="margin:0" id="outInfo">No file generated yet.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Current registry (<span id="count">0</span> records)</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Recipient</th><th>Program</th><th>Issue date</th><th>Status</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <details>
+    <summary>How to upload (step by step)</summary>
+    <ol>
+      <li>Click <strong>Generate registry.js</strong> &mdash; the file combines the current registry with your new record. A repeated ID replaces the old record instead of duplicating it.</li>
+      <li>Click <strong>Download registry.js</strong>.</li>
+      <li>Open the repository on GitHub &rarr; <strong>Add file &rarr; Upload files</strong>.</li>
+      <li>Drag the downloaded <code>registry.js</code> in, then click <strong>Commit changes</strong>.</li>
+      <li>Wait 2&ndash;10 minutes. The credential is now verifiable at <code>verify.iiefinstitute.org</code>.</li>
+      <li>To publish only real records, check <strong>Start a fresh registry</strong> before generating.</li>
+    </ol>
+  </details>
+</main>
+<footer>Registry admin &mdash; the public verification page is at verify.iiefinstitute.org</footer>
+
+<script src="registry.js"></script>
+<script>
+(function(){
+  var fields = ['f_id','f_name','f_program','f_type','f_hours','f_period','f_assessment','f_issue','f_status','f_expiry','f_revokeDate','f_revokeReason'];
+  var tbody = document.getElementById('tbody');
+  var count = document.getElementById('count');
+  var out = document.getElementById('out');
+  var outInfo = document.getElementById('outInfo');
+  var dl = document.getElementById('dl');
+  var last = '';
+
+  function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+  function q(id){ return document.getElementById(id).value.trim(); }
+
+  function renderTable(){
+    var rows='';
+    window.REGISTRY.forEach(function(r){
+      rows += '<tr><td><strong>'+esc(r.id)+'</strong></td><td>'+esc(r.name)+'</td><td>'+esc(r.program)+'</td><td>'+esc(r.issueDate)+'</td><td class="st '+r.status+'">'+r.status+'</td></tr>';
+    });
+    tbody.innerHTML = rows;
+    count.textContent = window.REGISTRY.length;
+  }
+
+  function jsStr(s){ return JSON.stringify(s||''); }
+
+  document.getElementById('gen').addEventListener('click', function(){
+    var base = document.getElementById('f_fresh').checked ? [] : window.REGISTRY.slice();
+    var id = q('f_id');
+    if(!id || !q('f_name') || !q('f_program') || !q('f_hours') || !q('f_period') || !q('f_issue')){
+      alert('Please fill in all required fields (marked with *).');
+      return;
+    }
+    var rec = {
+      id: id, name: q('f_name'), program: q('f_program'), type: q('f_type'),
+      hours: q('f_hours'), period: q('f_period'),
+      assessment: q('f_assessment') || 'Passed',
+      issuedBy: 'Center for Professional Development, International Institute of Economics and Finance',
+      issueDate: q('f_issue'), status: q('f_status')
+    };
+    if(rec.status==='expired') rec.expiryDate = q('f_expiry');
+    if(rec.status==='revoked'){ rec.revokeDate = q('f_revokeDate'); rec.revokeReason = q('f_revokeReason'); }
+    var found = false;
+    base = base.map(function(r){ if(r.id.toUpperCase()===id.toUpperCase()){ found=true; return rec; } return r; });
+    if(!found) base.push(rec);
+    base.sort(function(a,b){ return a.id < b.id ? -1 : 1; });
+
+    var lines = [
+      '// IIEF Credential Registry',
+      '// Managed via admin.html - do not edit manually unless you know what you are doing.',
+      'window.REGISTRY = ['
+    ];
+    base.forEach(function(r, i){
+      var c = '  {\n';
+      c += '    id: '+jsStr(r.id)+',\n';
+      c += '    name: '+jsStr(r.name)+',\n';
+      c += '    program: '+jsStr(r.program)+',\n';
+      c += '    type: '+jsStr(r.type)+',\n';
+      c += '    hours: '+jsStr(r.hours)+',\n';
+      c += '    period: '+jsStr(r.period)+',\n';
+      c += '    assessment: '+jsStr(r.assessment)+',\n';
+      c += '    issuedBy: '+jsStr(r.issuedBy)+',\n';
+      c += '    issueDate: '+jsStr(r.issueDate)+',\n';
+      c += '    status: '+jsStr(r.status);
+      if(r.expiryDate) c += ',\n    expiryDate: '+jsStr(r.expiryDate);
+      if(r.revokeDate) c += ',\n    revokeDate: '+jsStr(r.revokeDate);
+      if(r.revokeReason) c += ',\n    revokeReason: '+jsStr(r.revokeReason);
+      c += '\n  }' + (i < base.length-1 ? ',' : '');
+      lines.push(c);
+    });
+    lines.push('];');
+    last = lines.join('\n');
+    out.value = last;
+    dl.disabled = false;
+    outInfo.textContent = 'Ready: ' + base.length + ' records' + (found ? ' (ID replaced existing record)' : ' (new record added)') + '. Download and upload to GitHub.';
+  });
+
+  dl.addEventListener('click', function(){
+    if(!last) return;
+    var blob = new Blob([last], {type:'text/javascript'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'registry.js';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+
+  renderTable();
+})();
+</script>
+</body>
+</html>
