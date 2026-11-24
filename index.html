@@ -5,56 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Credential Verification — International Institute of Economics and Finance</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Georgia, "Times New Roman", serif; background:#f4f5f7; color:#1a2233; line-height:1.6; }
-  header { background:#16243d; color:#fff; padding:22px 24px; border-bottom:4px solid #c9a13b; }
-  .brand { max-width:900px; margin:0 auto; display:flex; align-items:center; gap:16px; }
-  .emblem { width:52px; height:52px; border-radius:50%; background:#c9a13b; color:#16243d; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:11px; letter-spacing:.5px; text-align:center; flex-shrink:0; }
-  .brand h1 { font-size:20px; font-weight:600; }
-  .brand p { font-size:13px; color:#c8d2e4; }
-  main { max-width:900px; margin:0 auto; padding:48px 24px 64px; }
-  h2 { font-size:34px; color:#16243d; margin-bottom:14px; }
-  .lead { color:#3c4658; max-width:560px; margin-bottom:30px; }
-  .searchbox { display:flex; gap:10px; max-width:660px; margin-bottom:14px; }
-  input[type=text] { flex:1; padding:14px 16px; font-size:16px; border:1px solid #c3cad6; border-radius:6px; font-family:inherit; }
-  input[type=text]:focus { outline:2px solid #c9a13b; }
-  button.verify { background:#16243d; color:#fff; border:none; padding:14px 28px; border-radius:6px; font-size:16px; cursor:pointer; font-family:inherit; }
-  button.verify:hover { background:#22355a; }
-  .demo-hint { font-size:13px; color:#6b7486; margin-bottom:34px; }
-  .demo-hint code { background:#e6e9ef; padding:1px 7px; border-radius:4px; font-size:12px; }
-  .card { border:1px solid #d5dae3; border-radius:10px; background:#fff; max-width:860px; margin-bottom:28px; overflow:hidden; }
-  .card .head { padding:24px 28px; display:flex; gap:16px; align-items:flex-start; }
-  .card.valid .head { border-left:5px solid #1e7d43; }
-  .card.expired .head { border-left:5px solid #b98219; }
-  .card.revoked .head, .card.notfound .head { border-left:5px solid #b02832; }
-  .badge { width:40px; height:40px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-  .valid .badge { background:#1e7d43; } .expired .badge { background:#b98219; }
-  .revoked .badge, .notfound .badge { background:#b02832; }
-  .card h3 { font-size:19px; }
-  .card.valid h3 { color:#1e7d43; } .card.expired h3 { color:#8f6210; }
-  .card.revoked h3, .card.notfound h3 { color:#b02832; }
-  .card .sub { font-size:14px; color:#5a6474; margin-top:4px; }
-  table { width:100%; border-collapse:collapse; font-size:15px; }
-  table th { text-align:left; font-weight:600; font-size:12px; letter-spacing:.8px; color:#6b7486; padding:14px 28px 8px; border-top:1px solid #e6e9ef; }
-  table td { padding:8px 28px 12px; vertical-align:top; }
-  table tr.section th { background:#f4f5f7; padding:10px 28px; }
-  .status-valid { color:#1e7d43; font-weight:600; }
-  .status-expired { color:#8f6210; font-weight:600; }
-  .status-revoked { color:#b02832; font-weight:600; }
-  .card .note { padding:18px 28px; font-size:13px; color:#5a6474; border-top:1px solid #e6e9ef; }
-  .canonical { font-family:monospace; font-size:12px; background:#f0f2f5; padding:4px 8px; border-radius:4px; word-break:break-all; }
-  .info h4 { font-size:20px; color:#16243d; margin:36px 0 12px; }
-  .info ul { margin:0 0 18px 22px; }
-  .info li { margin-bottom:8px; }
-  footer { text-align:center; font-size:13px; color:#6b7486; padding:26px; border-top:1px solid #dfe3ea; background:#eef0f4; }
-  .hidden { display:none; }
-  a { color:#16243d; }
+  :root{
+    --navy:#1b2a4a; --navy2:#22355c; --gold:#c9a227; --bg:#f4f6f9;
+    --card:#ffffff; --line:#e3e7ee; --text:#22303f; --muted:#6b7686;
+    --green:#1e7f4f; --green-bg:#e9f6ef; --amber:#a3691b; --amber-bg:#fdf3e3;
+    --red:#b3261e; --red-bg:#fdeceb;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Segoe UI", Arial, Helvetica, sans-serif; background:var(--bg); color:var(--text); line-height:1.55;}
+  header{background:var(--navy); border-bottom:4px solid var(--gold); color:#fff;}
+  .head-in{max-width:960px; margin:0 auto; padding:18px 20px; display:flex; align-items:center; gap:16px;}
+  .seal{width:52px; height:52px; border-radius:50%; background:var(--gold); color:var(--navy);
+        display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px;
+        text-align:center; letter-spacing:.5px; flex:none;}
+  .head-in h1{font-size:20px; font-weight:600;}
+  .head-in p{font-size:13px; color:#c8d2e4;}
+  main{max-width:860px; margin:0 auto; padding:36px 20px 60px;}
+  h2.page{font-size:30px; color:var(--navy); margin-bottom:12px;}
+  .lead{max-width:560px; color:var(--muted); margin-bottom:24px;}
+  .search{display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+  input#qid{flex:1 1 320px; padding:13px 14px; font-size:16px; border:1px solid #c9d1dd; border-radius:6px; background:#fff;}
+  input#qid:focus{outline:2px solid var(--navy2); outline-offset:1px;}
+  button{padding:13px 28px; font-size:16px; font-weight:600; color:#fff; background:var(--navy);
+         border:none; border-radius:6px; cursor:pointer;}
+  button:hover{background:var(--navy2);}
+  .demo-hint{font-size:13px; color:var(--muted); margin-bottom:28px;}
+  .demo-hint code{background:#e8ecf3; padding:1px 6px; border-radius:4px; font-size:12px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-bottom:28px;}
+  .card-head{padding:20px 24px; border-left:6px solid transparent;}
+  .card-head .t{font-size:19px; font-weight:700; display:flex; gap:12px; align-items:center;}
+  .card-head .s{font-size:14px; color:var(--muted); margin-top:4px; margin-left:44px;}
+  .dot{width:32px; height:32px; border-radius:50%; color:#fff; display:flex; align-items:center;
+       justify-content:center; font-size:17px; font-weight:700; flex:none;}
+  .ok .card-head{border-left-color:var(--green);} .ok .dot{background:var(--green);} .ok .t{color:var(--green);}
+  .warn .card-head{border-left-color:var(--amber);} .warn .dot{background:var(--amber);} .warn .t{color:var(--amber);}
+  .bad .card-head{border-left-color:var(--red);} .bad .dot{background:var(--red);} .bad .t{color:var(--red);}
+  .card-body{padding:6px 24px 18px; border-top:1px solid var(--line);}
+  table.rec{width:100%; border-collapse:collapse; font-size:15px;}
+  table.rec th{text-align:left; font-weight:600; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+               color:var(--muted); padding:14px 16px 14px 0; width:220px; vertical-align:top; border-bottom:1px solid var(--line);}
+  table.rec td{padding:14px 0; border-bottom:1px solid var(--line); vertical-align:top;}
+  table.rec tr:last-child th, table.rec tr:last-child td{border-bottom:none;}
+  .status-val{font-weight:700;}
+  .status-val.ok{color:var(--green);} .status-val.warn{color:var(--amber);} .status-val.bad{color:var(--red);}
+  .note{padding:14px 24px 20px; font-size:14px; color:var(--muted); border-top:1px solid var(--line);}
+  .note a{color:var(--navy2);}
+  .canon{margin-top:12px; font-size:13px; color:var(--muted);}
+  .canon code{background:#eef1f6; padding:3px 8px; border-radius:4px; word-break:break-all;}
+  .nf-body{padding:20px 24px; font-size:15px;}
+  h3.sec{font-size:20px; color:var(--navy); margin:8px 0 12px;}
+  ul.use{margin:0 0 8px 22px;}
+  ul.use li{margin-bottom:6px;}
+  footer{border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+         text-align:center; padding:22px; background:#eef1f5;}
+  @media (max-width:560px){ table.rec th{width:auto; display:block; padding-bottom:2px; border-bottom:none;} table.rec td{padding-top:0; border-bottom:1px solid var(--line);} }
 </style>
 </head>
 <body>
 <header>
-  <div class="brand">
-    <div class="emblem">IIEF<br>EST.</div>
+  <div class="head-in">
+    <div class="seal">IIEF</div>
     <div>
       <h1>International Institute of Economics and Finance</h1>
       <p>Credential Verification Service</p>
@@ -62,114 +72,128 @@
   </div>
 </header>
 <main>
-  <h2>Credential Verification</h2>
-  <p class="lead">This official page confirms whether a certificate of completion, diploma or professional credential was genuinely issued by the institute. Enter the credential number printed on the document &mdash; or simply scan the QR code on it.</p>
+  <h2 class="page">Credential Verification</h2>
+  <p class="lead">This official page confirms whether a certificate of completion, diploma or professional
+  credential was genuinely issued by the institute. Enter the credential number printed on the document
+  &mdash; or simply scan the QR code on it.</p>
 
-  <div class="searchbox">
-    <input type="text" id="qid" placeholder="e.g. PRC-2026-003177" autocomplete="off">
-    <button class="verify" id="btn">Verify</button>
+  <div class="search">
+    <input id="qid" type="text" placeholder="e.g. PRC-2026-003177" autocomplete="off">
+    <button id="btn">Verify</button>
   </div>
-  <p class="demo-hint" id="demoHint">Demo registry contains: <code>BBA-2026-004812</code> (diploma, valid), <code>PRC-2026-003177</code> (certificate, valid), <code>FSC-2023-118246</code> (expired), <code>CSA-2026-044811</code> (revoked). Any other number shows the &ldquo;not found&rdquo; state.</p>
+  <p class="demo-hint" id="demoHint">Demo registry contains: <code>BBA-2026-004812</code> (diploma, valid),
+  <code>PRC-2026-003177</code> (certificate, valid), <code>FSC-2023-118246</code> (expired),
+  <code>CSA-2026-044811</code> (revoked). Any other number shows the &ldquo;not found&rdquo; state.</p>
 
-  <div class="card hidden" id="result">
-    <div class="head">
-      <div class="badge" id="rBadge"></div>
-      <div>
-        <h3 id="rTitle"></h3>
-        <p class="sub" id="rSub"></p>
-      </div>
-    </div>
-    <div id="rBody"></div>
-    <div class="note" id="rNote"></div>
-  </div>
+  <div id="result"></div>
 
-  <div class="info">
-    <h4>How this page is used</h4>
-    <p>Employers, universities and licensing bodies open the link printed on the certificate (or scan its QR code) and compare the record with the paper document:</p>
-    <ul>
-      <li>the name on the record must match the applicant&rsquo;s identity documents;</li>
-      <li>the program, hours and dates must match what the CV claims;</li>
-      <li>the status line is the decisive element &mdash; &ldquo;Valid&rdquo; confirms the credential, &ldquo;No credential found&rdquo; means the document cannot be confirmed.</li>
-    </ul>
-    <p>For disputed or unusual cases, contact the Office of the Registrar by email at <strong>registrar@iiefinstitute.org</strong>, quoting the credential ID.</p>
-  </div>
+  <h3 class="sec">How this page is used</h3>
+  <p>Employers, universities and licensing bodies open the link printed on the certificate (or scan its
+  QR code) and compare the record with the paper document:</p>
+  <ul class="use">
+    <li>the name on the record must match the applicant&rsquo;s identity documents;</li>
+    <li>the program, hours and dates must match what the CV claims;</li>
+    <li>the status line is the decisive element &mdash; &ldquo;Valid&rdquo; confirms the credential,
+    &ldquo;No credential found&rdquo; means the document cannot be confirmed.</li>
+  </ul>
 </main>
 <footer>Demo prototype for layout demonstration. Institute, persons and records are fictional.</footer>
 
 <script src="registry.js"></script>
 <script>
 (function(){
-  var input = document.getElementById('qid');
-  var btn = document.getElementById('btn');
-  var card = document.getElementById('result');
-  var badge = document.getElementById('rBadge');
-  var title = document.getElementById('rTitle');
-  var sub = document.getElementById('rSub');
-  var body = document.getElementById('rBody');
-  var note = document.getElementById('rNote');
-  var ORIGIN = 'https://verify.iiefinstitute.org';
+  var norm = function(s){ return String(s||"").toUpperCase().replace(/\s+/g,""); };
+  var out = document.getElementById("result");
+  var input = document.getElementById("qid");
 
-  function norm(s){ return (s||'').replace(/\s+/g,'').toUpperCase(); }
-  function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
-  function today(){ return new Date().toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}); }
+  function esc(s){ var d=document.createElement("div"); d.textContent=String(s==null?"":s); return d.innerHTML; }
 
-  function row(label, value){
-    return '<tr><td style="width:210px;color:#6b7486;font-size:12px;letter-spacing:.8px;">'+label+'</td><td>'+value+'</td></tr>';
+  function fmtDate(v){
+    if(!v) return "&mdash;";
+    var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m) return esc(v);
+    var mo=["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return mo[parseInt(m[2],10)-1]+" "+parseInt(m[3],10)+", "+m[1];
   }
-  function section(t){ return '<tr class="section"><th colspan="2">'+t+'</th></tr>'; }
 
-  function render(rec, query){
-    card.className = 'card ' + (rec ? rec.status : 'notfound');
-    card.classList.remove('hidden');
-    body.innerHTML = '';
-    if(!rec){
-      badge.textContent='\u2715';
-      title.textContent='No credential found';
-      sub.textContent='Example of what employers see for an unknown number.';
-      body.innerHTML = '<tr><td colspan="2" style="padding:18px 28px;">No record matches credential ID <strong>'+esc(query)+'</strong>. Check the number on the document, or request verification through the Office of the Registrar. A document bearing this institute\u2019s name that does not appear here was not issued by the institute.</td></tr>';
-      note.innerHTML = 'Verified against the institute registry on '+today()+'.';
+  function isExpired(r){
+    if(r.status && String(r.status).toLowerCase()==="expired") return true;
+    if(r.expires){
+      var e = new Date(r.expires+"T23:59:59");
+      return e < new Date();
+    }
+    return false;
+  }
+
+  function show(r, q){
+    var today = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    var canon = location.origin + location.pathname + "?id=" + encodeURIComponent(q);
+    if(!r){
+      out.innerHTML =
+        '<div class="card bad">' +
+          '<div class="card-head"><div class="t"><span class="dot">&times;</span>No credential found</div>' +
+          '<div class="s">No record matches this credential number.</div></div>' +
+          '<div class="nf-body">No record matches credential ID <b>'+esc(q)+'</b>. Check the number on the document, ' +
+          'or request verification through the <a href="mailto:registrar@iiefinstitute.org">Office of the Registrar</a>. ' +
+          'A document bearing this institute&rsquo;s name that does not appear here was not issued by the institute.</div>' +
+        '</div>';
       return;
     }
-    badge.textContent='\u2713';
-    var st = rec.status;
-    if(st==='valid'){ title.textContent='Verified \u2014 credential is genuine and valid'; sub.textContent='This record matches the credential number above.'; }
-    if(st==='expired'){ title.textContent='Expired \u2014 credential is genuine but no longer current'; sub.textContent='This record matches the credential number above, however its validity period has ended.'; }
-    if(st==='revoked'){ title.textContent='Revoked \u2014 credential is no longer in force'; sub.textContent='This record matches the credential number above, however the credential has been revoked.'; }
-    body.innerHTML =
-      section('CREDENTIAL RECORD') +
-      row('RECIPIENT', esc(rec.name)) +
-      row('PROGRAM', esc(rec.program)) +
-      row('TYPE', esc(rec.type)) +
-      row('INSTRUCTIONAL HOURS', esc(rec.hours)) +
-      row('PROGRAM PERIOD', esc(rec.period)) +
-      row('FINAL ASSESSMENT', esc(rec.assessment)) +
-      row('ISSUED BY', esc(rec.issuedBy)) +
-      row('ISSUE DATE', esc(rec.issueDate));
+    var st = String(r.status||"valid").toLowerCase();
+    if(isExpired(r) && st==="valid") st = "expired";
+    var badge = st==="valid" ? "ok" : (st==="expired" ? "warn" : "bad");
+    var title = st==="valid" ? "Verified &mdash; credential is genuine and valid"
+              : st==="expired" ? "Expired credential"
+              : "Revoked credential";
+    var sub = st==="valid" ? "This record matches the credential number above."
+            : st==="expired" ? "This credential was issued by the institute but is no longer valid."
+            : "This credential has been revoked and is not valid.";
+    var rows = [
+      ["Recipient", r.name],
+      ["Program", r.program],
+      ["Type", r.type],
+      ["Instructional hours", r.hours ? r.hours+" hours" : ""],
+      ["Program period", r.period],
+      ["Final assessment", r.assessment],
+      ["Issued by", r.issuedBy || "Center for Professional Development, International Institute of Economics and Finance"],
+      ["Issue date", fmtDate(r.issueDate)]
+    ];
+    if(r.expires) rows.push(["Valid until", fmtDate(r.expires)]);
+    if(st==="revoked" && (r.revokeReason || r.revokeDate))
+      rows.push(["Revocation", (r.revokeReason? esc(r.revokeReason):"") + (r.revokeDate? " &middot; "+fmtDate(r.revokeDate):"")]);
     var stLabel = st.charAt(0).toUpperCase()+st.slice(1);
-    var stHtml = '<span class="status-'+st+'">'+stLabel+'</span>';
-    if(st==='expired' && rec.expiryDate) stHtml += ' \u00b7 Expired '+esc(rec.expiryDate);
-    if(st==='revoked') stHtml += ' \u00b7 Revoked '+esc(rec.revokeDate||'')+(rec.revokeReason? ' \u2014 '+esc(rec.revokeReason):'');
-    body.innerHTML += row('STATUS', stHtml);
-    var canonical = ORIGIN + '/?id=' + encodeURIComponent(rec.id);
-    note.innerHTML = 'Verified against the institute registry on '+today()+'. If you suspect a forgery, contact the <a href="mailto:registrar@iiefinstitute.org">Office of the Registrar</a> with the credential ID.<br><br>Canonical URL for QR code: <span class="canonical">'+esc(canonical)+'</span>';
-  }
-
-  function lookup(q){
-    q = (q||'').trim();
-    if(!q) return;
-    var rec = null;
-    for(var i=0;i<window.REGISTRY.length;i++){
-      if(norm(window.REGISTRY[i].id)===norm(q)){ rec = window.REGISTRY[i]; break; }
+    var stExtra = st==="valid" ? " &middot; No revocation on record" : "";
+    var t = "";
+    for(var i=0;i<rows.length;i++){
+      if(!rows[i][1]) continue;
+      t += "<tr><th>"+rows[i][0]+"</th><td>"+(i===0?esc(rows[i][1]):rows[i][1])+"</td></tr>";
     }
-    render(rec, q);
-    if(rec){ history.replaceState(null,'','?id='+encodeURIComponent(rec.id)); }
+    t += '<tr><th>Status</th><td><span class="status-val '+badge+'">'+stLabel+'</span>'+stExtra+'</td></tr>';
+    out.innerHTML =
+      '<div class="card '+badge+'">' +
+        '<div class="card-head"><div class="t"><span class="dot">&#10003;</span>'+title+'</div>' +
+        '<div class="s">'+sub+'</div></div>' +
+        '<div class="card-body"><table class="rec">'+t+'</table></div>' +
+        '<div class="note">Verified against the institute registry on '+today+'. If you suspect a forgery, contact the ' +
+        '<a href="mailto:registrar@iiefinstitute.org">Office of the Registrar</a> with the credential ID.' +
+        '<div class="canon">Canonical URL for QR code: <code>'+esc(canon)+'</code></div></div>' +
+      '</div>';
   }
 
-  btn.addEventListener('click', function(){ lookup(input.value); });
-  input.addEventListener('keydown', function(e){ if(e.key==='Enter') lookup(input.value); });
+  function go(){
+    var q = norm(input.value);
+    if(!q) return;
+    var r = null, list = (window.REGISTRY||[]);
+    for(var i=0;i<list.length;i++){ if(norm(list[i].id)===q){ r=list[i]; break; } }
+    show(r, q);
+    if(out.firstChild) out.firstChild.scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
 
-  var param = new URLSearchParams(location.search).get('id');
-  if(param){ input.value = param; lookup(param); }
+  document.getElementById("btn").addEventListener("click", go);
+  input.addEventListener("keydown", function(e){ if(e.key==="Enter") go(); });
+
+  var pid = new URLSearchParams(location.search).get("id");
+  if(pid){ input.value = pid.trim(); go(); }
 })();
 </script>
 </body>
